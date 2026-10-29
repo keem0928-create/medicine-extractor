@@ -134,6 +134,65 @@ function doseDisplay(rec){
   return `${dose} ${freq}`.trim();
 }
 
+// 사용자가 지정한 성분만 결과창에서 붉은색으로 표시합니다.
+const highlightedIngredients = [
+  "Aspirin",
+  "Acetylsalicylic acid",
+  "Clopidogrel",
+  "Prasugrel",
+  "Ticagrelor",
+  "Ticlopidine",
+  "Cilostazol",
+  "Dipyridamole",
+  "Cangrelor",
+  "Abciximab",
+  "Eptifibatide",
+  "Tirofiban",
+  "Warfarin",
+  "Acenocoumarol",
+  "Apixaban",
+  "Rivaroxaban",
+  "Edoxaban",
+  "Dabigatran etexilate",
+  "Heparin",
+  "Enoxaparin",
+  "Dalteparin",
+  "Nadroparin",
+  "Tinzaparin",
+  "Fondaparinux",
+  "Argatroban",
+  "Bivalirudin",
+  "Desirudin",
+  "Sarpogrelate",
+  "Triflusal",
+  "Beraprost",
+  "Limaprost alfadex",
+  "Sulodexide",
+  "Ibudilast",
+  "Nicergoline",
+  "Ginkgo biloba extract",
+  "Alteplase",
+  "Tenecteplase",
+  "Reteplase",
+  "Urokinase",
+  "Streptokinase"
+];
+const normalizeIngredient = text => String(text || '').normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
+function shouldHighlightIngredient(rec){
+  const text = normalizeIngredient(rec.ingredient_name);
+  return highlightedIngredients.some(name => {
+    const target = normalizeIngredient(name);
+    let start = text.indexOf(target);
+    while (start !== -1) {
+      const before = text[start - 1] || '';
+      const after = text[start + target.length] || '';
+      if (!/[a-z]/.test(before) && !/[a-z]/.test(after)) return true;
+      start = text.indexOf(target, start + 1);
+    }
+    return false;
+  });
+}
+
 // ===== 파서 =====
 function parse(text){
   const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
@@ -245,7 +304,7 @@ function toDisplay(rec, displayMode, doseMode, asOf){
   const start = fromYYYYMMDD(rec.date);
   const end = addDays(start, rec.days - 1);
   const remaining = Math.round((Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()) - Date.UTC(y, m - 1, d)) / 86400000) + 1;
-  const base = `${baseText(rec, displayMode)} (남은 ${remaining}일)`;
+  const base = `${baseText(rec, displayMode)} (잔여 ${remaining}일)`;
   if(doseMode === 'withDose'){
     const dose = doseDisplay(rec);
     return `${base} ${dose}`.trim();
@@ -344,6 +403,7 @@ function run(){
       for(const r of items){
         const li = document.createElement('li');
         li.textContent = toDisplay(r, displayMode, doseMode, asOf);
+        if (shouldHighlightIngredient(r)) li.style.color = '#dc2626';
         medicines.appendChild(li);
       }
       group.append(heading, medicines);
