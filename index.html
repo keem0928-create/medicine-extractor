@@ -134,7 +134,9 @@ function doseDisplay(rec){
   return `${dose} ${freq}`.trim();
 }
 
-// 사용자가 지정한 성분만 결과창에서 붉은색으로 표시합니다.
+// 지정된 성분과 국내 성분명 표기를 결과창에서 붉은색으로 표시합니다.
+// 성분명 필드만 검사하며, 문헌 약어(ASA, tPA, UK, SK 등)는 등록하지 않습니다.
+// 영문 기본명을 유지하므로 뒤에 붙는 염/수화물 이름도 인식합니다.
 const highlightedIngredients = [
   "Aspirin",
   "Acetylsalicylic acid",
@@ -171,15 +173,75 @@ const highlightedIngredients = [
   "Ibudilast",
   "Nicergoline",
   "Ginkgo biloba extract",
+  "Ginkgo biloba leaf ext",
+  "Ginkgo biloba leaf extract",
   "Alteplase",
   "Tenecteplase",
   "Reteplase",
   "Urokinase",
-  "Streptokinase"
+  "Streptokinase",
+  "Nadroparine",
+  "Dabigatran",
+  "Limaprost",
+  "Ginkgo biloba ext",
+  "Ginkgo leaf ext",
+  "Ginkgo leaf extract",
+  "Ginkgo leaf dried ext",
+  "Ginkgo leaf dried extract",
+  "Ginkgo biloba leaf dried ext",
+  "Ginkgo biloba leaf dried extract",
+  "Ginkgo biloba leaf dry extract",
+  "Dried ginkgo leaf extract"
+];
+const highlightedKoreanIngredients = [
+  "아스피린",
+  "아세틸살리실산",
+  "클로피도그렐",
+  "프라수그렐",
+  "티카그렐러",
+  "티클로피딘",
+  "실로스타졸",
+  "디피리다몰",
+  "캉그렐러",
+  "압식시맙",
+  "엡티피바타이드",
+  "티로피반",
+  "와파린",
+  "아세노쿠마롤",
+  "아픽사반",
+  "리바록사반",
+  "에독사반",
+  "다비가트란",
+  "헤파린",
+  "에녹사파린",
+  "달테파린",
+  "나드로파린",
+  "틴자파린",
+  "폰다파리눅스",
+  "아가트로반",
+  "비발리루딘",
+  "데시루딘",
+  "사르포그렐레이트",
+  "트리플루살",
+  "베라프로스트",
+  "리마프로스트",
+  "설로덱시드",
+  "이부딜라스트",
+  "니세르골린",
+  "은행엽엑스",
+  "은행엽건조엑스",
+  "알테플라제",
+  "테넥테플라제",
+  "레테플라제",
+  "유로키나제",
+  "스트렙토키나제"
 ];
 const normalizeIngredient = text => String(text || '').normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
 function shouldHighlightIngredient(rec){
   const text = normalizeIngredient(rec.ingredient_name);
+  // 한글 성분의 띄어쓰기와 염산염/나트륨/수화물 등 접미 표기를 허용합니다.
+  const koreanText = text.replace(/\s+/g, '');
+  if (highlightedKoreanIngredients.some(name => koreanText.includes(name))) return true;
   return highlightedIngredients.some(name => {
     const target = normalizeIngredient(name);
     let start = text.indexOf(target);
