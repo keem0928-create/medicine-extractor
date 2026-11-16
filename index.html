@@ -91,7 +91,7 @@
           <button id="copyCSV" class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">CSV 복사</button>
         </div>
       </div>
-      <p class="text-xs text-slate-500 mt-1">복사 버튼은 약명과 성분명만 줄바꿈으로 복사합니다. CSV 복사는 상세 정보를 복사합니다.</p>
+      <p class="text-xs text-slate-500 mt-1">복사 버튼은 약명과 성분명을 줄바꿈으로 복사하며, 붉은색 약 앞에는 ★가 붙습니다. CSV 복사는 상세 정보를 복사합니다.</p>
       <div id="resultEmpty" class="text-sm text-slate-500 py-6">아직 결과가 없습니다. 상단에 텍스트를 붙여넣고 “현재 복용 약 추출”을 눌러주세요.</div>
       <ul id="resultList" class="hidden mt-4 space-y-4"></ul>
       <div id="toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-3 py-2 rounded-lg">복사했습니다</div>
@@ -476,7 +476,7 @@ function run(){
   // 클립보드 핸들러(약마다 줄바꿈: CRLF)
   const CRLF = "\r\n";
   $('#copyBtn').onclick = async()=>{
-    const text = recs.map(r => baseText(r, 'nameIng')).join(CRLF);
+    const text = recs.map(r => (shouldHighlightIngredient(r) ? '★ ' : '') + baseText(r, 'nameIng')).join(CRLF);
     if(!text){ showToast('복사할 결과가 없습니다'); return; }
     if (await copyText(text)) showToast('약명과 성분명을 복사했습니다');
     else showToast('복사에 실패했습니다. 브라우저의 클립보드 권한을 확인해주세요');
